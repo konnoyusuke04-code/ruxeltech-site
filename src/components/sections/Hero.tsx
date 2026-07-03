@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode, SyntheticEvent } from "react";
 import {
   motion,
   useReducedMotion,
@@ -7,227 +8,260 @@ import {
   useTransform,
   type Variants,
 } from "framer-motion";
-import { Rocket, ShieldCheck, Sparkles, Sprout } from "lucide-react";
-import { CTAButton } from "@/components/site/CTAButton";
+import { CheckCircle2 } from "lucide-react";
+import { BrandButton } from "@/components/site/BrandButton";
+import { AchievementBadge } from "@/components/site/AchievementBadge";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 const container: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.12, delayChildren: 0.15 } },
+  show: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
 };
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease } },
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease } },
 };
 const fadeIn: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 1, ease } },
+  show: { opacity: 1, transition: { duration: 0.9, ease } },
 };
 
 const badges = [
-  { icon: ShieldCheck, label: "30年のIT経験を持つPM" },
-  { icon: Sparkles, label: "AI連携 × 業務理解" },
-  { icon: Rocket, label: "PoCから本番化まで対応" },
-  { icon: Sprout, label: "納品後も育てる改善支援" },
+  { main: "30年", sub: "PM直轄", ribbon: "実績" },
+  { main: "AI連携", sub: "対応", ribbon: "技術" },
+  { main: "運用改善", sub: "まで支援", ribbon: "支援" },
 ];
+
+/** Marker-highlight for keywords (light brand-blue underline wash, no orange). */
+function Mark({ children }: { children: ReactNode }) {
+  return (
+    <span className="px-0.5 font-bold text-[var(--brand-ink)] [background:linear-gradient(transparent_55%,oklch(0.8_0.1_250/0.4)_0)]">
+      {children}
+    </span>
+  );
+}
+
+/**
+ * Use the lightweight PNG (~15KB) as the primary source and fall back to the
+ * SVG only if the PNG is ever missing. The provided SVGs embed a full-res
+ * raster (~940KB each), so the PNG is visually identical but far lighter.
+ */
+function pngToSvg(e: SyntheticEvent<HTMLImageElement>) {
+  const img = e.currentTarget;
+  if (img.dataset.fallback) return;
+  img.dataset.fallback = "1";
+  img.src = img.src.replace(/\.png(\?.*)?$/, ".svg");
+}
 
 export function Hero() {
   const prefersReduced = useReducedMotion();
   const { scrollY } = useScroll();
-  // Very light parallax: image drifts down, copy drifts up as you scroll.
-  const imgShift = useTransform(scrollY, [0, 700], [0, 44]);
-  const copyShift = useTransform(scrollY, [0, 700], [0, -36]);
-  const imgY = prefersReduced ? 0 : imgShift;
-  const copyY = prefersReduced ? 0 : copyShift;
+  const personRaw = useTransform(scrollY, [0, 600], [0, -26]);
+  const symbolRaw = useTransform(scrollY, [0, 600], [0, 46]);
+  const personY = prefersReduced ? 0 : personRaw;
+  const symbolY = prefersReduced ? 0 : symbolRaw;
 
   return (
     <section
       id="top"
-      className="relative isolate flex min-h-[100svh] flex-col overflow-hidden text-primary-foreground md:min-h-[88vh] md:justify-center"
-      style={{ backgroundImage: "var(--gradient-hero)" }}
+      className="relative isolate overflow-x-hidden"
+      style={{ background: "var(--hero-surface)" }}
     >
-      {/* ---- Hero portrait ----
-           Mobile: full-bleed. Desktop: confined to a narrower right column so the
-           image covers by HEIGHT (native size, not upscaled by width) and the figure
-           reads smaller / more refined. The left edge is masked so it melts into the
-           navy background. Shrink `md:w-*` further to make the person smaller. */}
-      <motion.div
-        aria-hidden
-        style={{ y: imgY }}
-        className="pointer-events-none absolute inset-0"
-      >
-        <div className="absolute inset-y-0 right-0 w-full overflow-hidden md:w-[58%] lg:w-[52%] xl:w-[48%]">
-          <img
-            src="/images/hero/hero-business-woman.png"
-            alt="業務システムと生成AIを活用し、前を見据えるビジネスパーソン"
-            fetchPriority="high"
-            decoding="async"
-            className="h-full w-full scale-[1.08] object-cover object-[72%_18%] md:scale-100 md:object-[74%_center] md:[mask-image:linear-gradient(90deg,transparent_0%,#0006_12%,#000_32%)] md:[-webkit-mask-image:linear-gradient(90deg,transparent_0%,#0006_12%,#000_32%)]"
-          />
-        </div>
-      </motion.div>
+      {/* ===== Hero visual area (clips the person / watermark bleed) ===== */}
+      <div className="relative overflow-hidden">
+        {/* faint blueprint grid */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.5]"
+          style={{
+            backgroundImage:
+              "linear-gradient(oklch(0.45 0.16 255 / 0.05) 1px, transparent 1px), linear-gradient(90deg, oklch(0.45 0.16 255 / 0.05) 1px, transparent 1px)",
+            backgroundSize: "52px 52px",
+            maskImage:
+              "radial-gradient(ellipse at 65% 40%, black 30%, transparent 78%)",
+          }}
+        />
+        {/* soft brand glow behind the person */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute right-[-10%] top-[-10%] h-[70%] w-[60%] rounded-full opacity-70 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, var(--brand-tint), transparent 70%)",
+          }}
+        />
 
-      {/* ---- Readability scrims ---- */}
-      {/* desktop: darken the left where the copy lives, fade out over the portrait */}
-      <div
-        aria-hidden
-        className="absolute inset-0 hidden md:block"
-        style={{
-          background:
-            "linear-gradient(95deg, oklch(0.13 0.045 262 / 0.97) 0%, oklch(0.14 0.05 262 / 0.9) 30%, oklch(0.15 0.05 262 / 0.55) 48%, oklch(0.15 0.05 262 / 0) 68%)",
-        }}
-      />
-      {/* mobile: keep the portrait bright up top, darken toward the copy below */}
-      <div
-        aria-hidden
-        className="absolute inset-0 md:hidden"
-        style={{
-          background:
-            "linear-gradient(180deg, oklch(0.13 0.045 262 / 0.32) 0%, oklch(0.13 0.045 262 / 0.2) 24%, oklch(0.14 0.05 262 / 0.78) 58%, oklch(0.12 0.045 262 / 0.97) 84%)",
-        }}
-      />
-      {/* top scrim so the sticky header stays legible over the bright cards */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[oklch(0.12_0.05_262/0.4)] to-transparent"
-      />
-
-      {/* ---- Subtle system decorations (kept to the copy side) ---- */}
-      <GlowOrb />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.3]"
-        style={{
-          backgroundImage:
-            "linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          maskImage:
-            "linear-gradient(90deg, black 0%, black 34%, transparent 62%)",
-        }}
-      />
-      <FlowingLines />
-
-      {/* ---- Content ---- */}
-      <div className="relative z-10 mx-auto mt-auto w-full max-w-6xl px-6 pb-24 pt-28 md:my-0 md:mt-0 md:py-28 lg:py-32">
-        <motion.div
-          initial="hidden"
-          animate="show"
-          variants={container}
-          style={{ y: copyY }}
-          className="max-w-xl lg:max-w-2xl"
-        >
-          <motion.p
-            variants={fadeUp}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium tracking-wide text-[color:oklch(0.87_0.05_250)] shadow-[0_1px_0_oklch(1_0_0/0.05)_inset] backdrop-blur"
+        <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 pb-12 pt-16 md:pt-20 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-6 lg:pb-14 lg:pt-16">
+          {/* ---------- LEFT: copy ---------- */}
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={container}
+            className="relative z-10 max-w-xl min-w-0"
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent-blue)] shadow-[0_0_10px_var(--accent-blue)]" />
-            BtoBシステム開発チーム
-          </motion.p>
+            {/* speech-bubble label (navy pill with a downward tail) */}
+            <motion.div
+              variants={fadeUp}
+              className="relative mb-7 inline-flex items-center gap-2 rounded-full bg-[var(--brand-ink)] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_12px_28px_-14px_oklch(0.3_0.09_260/0.6)] md:text-[0.82rem]"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-bright)]" />
+              業務システム・AI連携にお悩みの企業様へ
+              <span
+                aria-hidden
+                className="absolute -bottom-1.5 left-9 h-3.5 w-3.5 rotate-45 rounded-[2px] bg-[var(--brand-ink)]"
+              />
+            </motion.div>
 
-          <motion.h1
-            variants={fadeUp}
-            className="text-[2rem] font-bold leading-[1.2] tracking-tight break-keep sm:text-4xl md:text-5xl lg:text-[3.4rem]"
-          >
-            業務を理解し、
-            <br />
-            <span className="text-transparent [-webkit-background-clip:text] [background-clip:text] bg-[image:linear-gradient(100deg,oklch(0.99_0.01_250)_0%,oklch(0.86_0.08_250)_100%)]">
-              使われ続ける
-            </span>
-            <wbr />
-            システムをつくる。
-          </motion.h1>
+            {/* main copy */}
+            <motion.h1
+              variants={fadeUp}
+              className="text-[1.9rem] font-bold leading-[1.2] tracking-tight text-[var(--brand-ink)] sm:text-4xl md:text-[2.9rem] lg:text-5xl"
+            >
+              業務を理解し、
+              <br className="hidden sm:block" />
+              <span className="text-[var(--brand)]">使われ続ける</span>
+              <span className="whitespace-nowrap">
+                <span className="text-[var(--brand)]">システム</span>をつくる。
+              </span>
+            </motion.h1>
 
-          <motion.p
-            variants={fadeUp}
-            className="mt-7 max-w-xl text-[0.95rem] leading-relaxed text-[color:oklch(0.88_0.02_250)] md:text-lg"
-          >
-            RuxelTechは、業務システム・Webアプリ・生成AI連携・業務自動化を、
-            要件整理から設計・開発・運用改善まで支援するシステム開発チームです。
-          </motion.p>
+            {/* emphasis copy — check-circle bullets with highlighted keywords.
+                Icon is absolutely positioned so the text is a normal block that
+                wraps reliably on narrow screens (avoids flex min-width quirks). */}
+            <motion.ul variants={fadeUp} className="mt-6 space-y-3">
+              <li className="relative pl-7">
+                <CheckCircle2
+                  className="absolute left-0 top-[3px] h-5 w-5 text-[var(--brand)]"
+                  strokeWidth={2.5}
+                />
+                <p className="text-[0.95rem] font-medium leading-relaxed text-[var(--brand-ink)] md:text-base">
+                  <Mark>30年PM直轄</Mark>で、要件整理から設計・開発まで
+                  <Mark>一括支援</Mark>
+                </p>
+              </li>
+              <li className="relative pl-7">
+                <CheckCircle2
+                  className="absolute left-0 top-[3px] h-5 w-5 text-[var(--brand)]"
+                  strokeWidth={2.5}
+                />
+                <p className="text-[0.95rem] font-medium leading-relaxed text-[var(--brand-ink)] md:text-base">
+                  AI連携・業務システム・自動化を<Mark>現場で使える仕組み</Mark>へ
+                </p>
+              </li>
+            </motion.ul>
 
-          <motion.div variants={fadeUp} className="mt-9 flex flex-wrap gap-4">
-            <CTAButton href="#contact">無料で相談する</CTAButton>
-            <CTAButton href="#works" variant="ghost">
-              開発実績を見る
-            </CTAButton>
+            {/* CTAs */}
+            <motion.div
+              variants={fadeUp}
+              className="mt-6 flex flex-col gap-3 sm:flex-row sm:gap-4"
+            >
+              <BrandButton href="#contact">無料で相談する</BrandButton>
+              <BrandButton href="#works" variant="outline">
+                開発実績を見る
+              </BrandButton>
+            </motion.div>
+
+            {/* trust badges — crown + laurel + shield achievement style */}
+            <motion.ul
+              variants={fadeIn}
+              className="mt-6 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mt-7 sm:flex-wrap sm:justify-start sm:gap-4 sm:overflow-visible sm:pb-0"
+            >
+              {badges.map((b) => (
+                <motion.li key={b.main} variants={fadeUp} className="flex-none">
+                  <AchievementBadge main={b.main} sub={b.sub} ribbon={b.ribbon} />
+                </motion.li>
+              ))}
+            </motion.ul>
           </motion.div>
 
-          {/* trust badges */}
-          <motion.ul
-            variants={fadeIn}
-            className="mt-11 grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap md:mt-14"
-          >
-            {badges.map((b) => (
-              <motion.li
-                key={b.label}
-                variants={fadeUp}
-                className="group inline-flex w-full min-w-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] py-2 pl-2.5 pr-3.5 text-xs font-medium leading-snug text-[color:oklch(0.9_0.02_250)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.09] sm:w-auto md:text-[0.8rem]"
-              >
-                <span className="inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[var(--accent-blue)]/15 text-[var(--accent-blue-soft)] ring-1 ring-inset ring-[var(--accent-blue)]/25">
-                  <b.icon className="h-3.5 w-3.5" strokeWidth={2} />
-                </span>
-                {b.label}
-              </motion.li>
-            ))}
-          </motion.ul>
-        </motion.div>
+          {/* ---------- RIGHT: person + diagonal symbol motif ---------- */}
+          {/* Adjust person size/position with the `h-*`, `right-*` utilities;
+              adjust the background motif with `w-*`, `-right-*`, `rotate`. */}
+          <div className="relative min-h-[340px] sm:min-h-[400px] lg:min-h-[500px]">
+            {/* soft background panel for depth */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute right-[-6%] top-[4%] h-[88%] w-[94%] rounded-[46%_54%_48%_52%/56%_44%_56%_44%] bg-[linear-gradient(145deg,#eef3fb_0%,#e2ebf7_100%)]"
+            />
+            {/* giant brand symbol as a diagonal background motif (pale blue-grey) */}
+            <motion.img
+              aria-hidden
+              src="/images/logo/ruxeltech-symbol.png"
+              onError={pngToSvg}
+              style={{
+                y: symbolY,
+                rotate: -12,
+                filter: "saturate(0.4) brightness(1.22)",
+              }}
+              className="pointer-events-none absolute -top-[8%] -right-[16%] w-[150%] max-w-none opacity-[0.08] lg:-right-[14%] lg:w-[128%]"
+            />
+
+            {/* person cutout (transparent) */}
+            <motion.img
+              src="/images/hero/hero-person-transparent.png"
+              alt="RuxelTechのシステム開発を案内するビジネスパーソン"
+              fetchPriority="high"
+              decoding="async"
+              style={{ y: personY }}
+              className="absolute bottom-0 right-0 h-[340px] w-auto drop-shadow-[0_34px_55px_oklch(0.24_0.07_260/0.2)] sm:h-[400px] lg:right-2 lg:h-[520px]"
+            />
+
+            {/* circular stat badge (speech bubble) near the person */}
+            <div className="absolute left-0 top-6 z-10 flex h-[5.6rem] w-[5.6rem] flex-col items-center justify-center rounded-full bg-white text-center shadow-[0_16px_38px_-14px_oklch(0.3_0.09_260/0.55)] ring-1 ring-[var(--brand)]/15 sm:top-2 lg:left-4 lg:h-[6.6rem] lg:w-[6.6rem]">
+              <span
+                aria-hidden
+                className="absolute inset-1.5 rounded-full border border-dashed border-[var(--brand)]/25"
+              />
+              <span className="relative text-[0.58rem] font-semibold text-[var(--brand-ink)] lg:text-[0.64rem]">
+                IT経験
+              </span>
+              <span className="relative flex items-end font-bold leading-none text-[var(--brand)]">
+                <span className="text-[1.5rem] lg:text-[1.8rem]">30</span>
+                <span className="mb-0.5 text-[0.85rem] lg:text-[0.95rem]">年</span>
+              </span>
+              <span className="relative text-[0.56rem] font-semibold text-[var(--brand-ink)] lg:text-[0.62rem]">
+                PM直轄
+              </span>
+              <span
+                aria-hidden
+                className="absolute -bottom-1 right-7 h-3.5 w-3.5 rotate-45 rounded-[2px] bg-white shadow-[3px_3px_6px_-3px_oklch(0.3_0.09_260/0.4)]"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* seam into the next section */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[oklch(0.14_0.05_262/0.5)]"
-      />
+      {/* ===== Bottom CTA box (overlaps hero bottom into the next section) ===== */}
+      <div className="relative z-20 mx-auto max-w-4xl px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease, delay: 0.4 }}
+          className="-mt-6 -mb-12 flex flex-col items-center gap-5 rounded-3xl border border-[var(--brand)]/10 bg-white p-6 text-center shadow-[0_30px_70px_-30px_oklch(0.24_0.07_260/0.4)] md:flex-row md:justify-between md:gap-8 md:p-7 md:text-left lg:-mt-12 lg:-mb-20"
+        >
+          <div>
+            <p className="text-lg font-bold tracking-tight text-[var(--brand-ink)] md:text-xl">
+              まずは業務課題の整理からご相談ください
+            </p>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              要件が固まっていない段階でも、現状の課題からご一緒に整理します。
+            </p>
+          </div>
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-center md:w-auto md:flex-none">
+            <BrandButton href="#contact" className="justify-center">
+              無料で相談する
+            </BrandButton>
+            <BrandButton
+              href="#works"
+              variant="outline"
+              className="justify-center"
+            >
+              開発実績を見る
+            </BrandButton>
+          </div>
+        </motion.div>
+      </div>
     </section>
-  );
-}
-
-/** Soft breathing accent orb sitting behind the copy column. */
-function GlowOrb() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute -left-24 top-1/4 h-[26rem] w-[26rem] rounded-full opacity-70 blur-3xl md:top-1/3"
-      style={{
-        background:
-          "radial-gradient(circle, oklch(0.55 0.16 255 / 0.28), transparent 68%)",
-        animation: "glow-breathe 9s ease-in-out infinite",
-      }}
-    />
-  );
-}
-
-/** Slow horizontal flowing lines suggesting data connections, faded to the left. */
-function FlowingLines() {
-  return (
-    <svg
-      aria-hidden
-      className="pointer-events-none absolute inset-0 h-full w-full opacity-30"
-      preserveAspectRatio="none"
-      viewBox="0 0 1200 800"
-      style={{
-        maskImage: "linear-gradient(90deg, black 0%, black 38%, transparent 66%)",
-      }}
-    >
-      <defs>
-        <linearGradient id="fline" x1="0" x2="1">
-          <stop offset="0%" stopColor="oklch(0.55 0.16 255 / 0)" />
-          <stop offset="50%" stopColor="oklch(0.85 0.12 250 / 0.7)" />
-          <stop offset="100%" stopColor="oklch(0.55 0.16 255 / 0)" />
-        </linearGradient>
-      </defs>
-      {[210, 360, 520, 660].map((y, i) => (
-        <path
-          key={i}
-          d={`M0 ${y} C 300 ${y - 40}, 900 ${y + 40}, 1200 ${y}`}
-          stroke="url(#fline)"
-          strokeWidth="1"
-          fill="none"
-          strokeDasharray="6 10"
-          style={{ animation: `dash-flow ${18 + i * 3}s linear infinite` }}
-        />
-      ))}
-    </svg>
   );
 }
