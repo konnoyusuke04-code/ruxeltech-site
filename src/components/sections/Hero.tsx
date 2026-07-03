@@ -10,7 +10,6 @@ import {
 } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import { BrandButton } from "@/components/site/BrandButton";
-import { AchievementBadge } from "@/components/site/AchievementBadge";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -28,9 +27,18 @@ const fadeIn: Variants = {
 };
 
 const badges = [
-  { main: "30年", sub: "PM直轄", ribbon: "実績" },
-  { main: "AI連携", sub: "対応", ribbon: "技術" },
-  { main: "運用改善", sub: "まで支援", ribbon: "支援" },
+  {
+    src: "/images/badge/badge-30years-pm.png",
+    alt: "30年のIT経験・PM直轄でプロジェクト推進",
+  },
+  {
+    src: "/images/badge/badge-ai-integration.png",
+    alt: "生成AI・業務活用のAI連携（設計・実装対応）",
+  },
+  {
+    src: "/images/badge/badge-operation-support.png",
+    alt: "運用改善まで支援（現場に寄り添い成果につなげる）",
+  },
 ];
 
 /** Marker-highlight for keywords (light brand-blue underline wash, no orange). */
@@ -162,14 +170,20 @@ export function Hero() {
               </BrandButton>
             </motion.div>
 
-            {/* trust badges — crown + laurel + shield achievement style */}
+            {/* trust badges — finished badge images (object-contain, transparent) */}
             <motion.ul
               variants={fadeIn}
-              className="mt-6 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mt-7 sm:flex-wrap sm:justify-start sm:gap-4 sm:overflow-visible sm:pb-0"
+              className="mt-6 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mt-7 sm:gap-4 sm:overflow-visible sm:pb-0"
             >
               {badges.map((b) => (
-                <motion.li key={b.main} variants={fadeUp} className="flex-none">
-                  <AchievementBadge main={b.main} sub={b.sub} ribbon={b.ribbon} />
+                <motion.li key={b.src} variants={fadeUp} className="flex-none">
+                  <img
+                    src={b.src}
+                    alt={b.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-24 w-auto object-contain drop-shadow-[0_6px_12px_oklch(0.3_0.09_260/0.1)] sm:h-28 lg:h-32"
+                  />
                 </motion.li>
               ))}
             </motion.ul>
