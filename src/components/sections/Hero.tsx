@@ -1,13 +1,20 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type Variants,
+} from "framer-motion";
+import { Rocket, ShieldCheck, Sparkles, Sprout } from "lucide-react";
 import { CTAButton } from "@/components/site/CTAButton";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 const container: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
+  show: { transition: { staggerChildren: 0.12, delayChildren: 0.15 } },
 };
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -15,138 +22,193 @@ const fadeUp: Variants = {
 };
 const fadeIn: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.9, ease } },
+  show: { opacity: 1, transition: { duration: 1, ease } },
 };
 
-const stats = [
-  { k: "30年", v: "IT経験のPM" },
-  { k: "AI × 業務", v: "両輪の開発力" },
-  { k: "小さく始める", v: "PoC〜本番化" },
-  { k: "運用改善", v: "納品して終わりにしない" },
+const badges = [
+  { icon: ShieldCheck, label: "30年のIT経験を持つPM" },
+  { icon: Sparkles, label: "AI連携 × 業務理解" },
+  { icon: Rocket, label: "PoCから本番化まで対応" },
+  { icon: Sprout, label: "納品後も育てる改善支援" },
 ];
 
 export function Hero() {
+  const prefersReduced = useReducedMotion();
+  const { scrollY } = useScroll();
+  // Very light parallax: image drifts down, copy drifts up as you scroll.
+  const imgShift = useTransform(scrollY, [0, 700], [0, 44]);
+  const copyShift = useTransform(scrollY, [0, 700], [0, -36]);
+  const imgY = prefersReduced ? 0 : imgShift;
+  const copyY = prefersReduced ? 0 : copyShift;
+
   return (
     <section
       id="top"
-      className="relative overflow-hidden text-primary-foreground"
+      className="relative isolate flex min-h-[100svh] flex-col overflow-hidden text-primary-foreground md:min-h-[88vh] md:justify-center"
       style={{ backgroundImage: "var(--gradient-hero)" }}
     >
-      {/* grid backdrop */}
+      {/* ---- Hero portrait ----
+           Mobile: full-bleed. Desktop: confined to a narrower right column so the
+           image covers by HEIGHT (native size, not upscaled by width) and the figure
+           reads smaller / more refined. The left edge is masked so it melts into the
+           navy background. Shrink `md:w-*` further to make the person smaller. */}
+      <motion.div
+        aria-hidden
+        style={{ y: imgY }}
+        className="pointer-events-none absolute inset-0"
+      >
+        <div className="absolute inset-y-0 right-0 w-full overflow-hidden md:w-[58%] lg:w-[52%] xl:w-[48%]">
+          <img
+            src="/images/hero/hero-business-woman.png"
+            alt="業務システムと生成AIを活用し、前を見据えるビジネスパーソン"
+            fetchPriority="high"
+            decoding="async"
+            className="h-full w-full scale-[1.08] object-cover object-[72%_18%] md:scale-100 md:object-[74%_center] md:[mask-image:linear-gradient(90deg,transparent_0%,#0006_12%,#000_32%)] md:[-webkit-mask-image:linear-gradient(90deg,transparent_0%,#0006_12%,#000_32%)]"
+          />
+        </div>
+      </motion.div>
+
+      {/* ---- Readability scrims ---- */}
+      {/* desktop: darken the left where the copy lives, fade out over the portrait */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.35]"
+        className="absolute inset-0 hidden md:block"
+        style={{
+          background:
+            "linear-gradient(95deg, oklch(0.13 0.045 262 / 0.97) 0%, oklch(0.14 0.05 262 / 0.9) 30%, oklch(0.15 0.05 262 / 0.55) 48%, oklch(0.15 0.05 262 / 0) 68%)",
+        }}
+      />
+      {/* mobile: keep the portrait bright up top, darken toward the copy below */}
+      <div
+        aria-hidden
+        className="absolute inset-0 md:hidden"
+        style={{
+          background:
+            "linear-gradient(180deg, oklch(0.13 0.045 262 / 0.32) 0%, oklch(0.13 0.045 262 / 0.2) 24%, oklch(0.14 0.05 262 / 0.78) 58%, oklch(0.12 0.045 262 / 0.97) 84%)",
+        }}
+      />
+      {/* top scrim so the sticky header stays legible over the bright cards */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[oklch(0.12_0.05_262/0.4)] to-transparent"
+      />
+
+      {/* ---- Subtle system decorations (kept to the copy side) ---- */}
+      <GlowOrb />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.3]"
         style={{
           backgroundImage:
             "linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)",
           backgroundSize: "56px 56px",
           maskImage:
-            "radial-gradient(ellipse at 70% 30%, black 30%, transparent 75%)",
+            "linear-gradient(90deg, black 0%, black 34%, transparent 62%)",
         }}
       />
-      <Particles />
-      <NetworkGraphic />
       <FlowingLines />
 
-      <div className="relative mx-auto max-w-6xl px-6 py-32 md:py-44">
-        <motion.div initial="hidden" animate="show" variants={container}>
+      {/* ---- Content ---- */}
+      <div className="relative z-10 mx-auto mt-auto w-full max-w-6xl px-6 pb-24 pt-28 md:my-0 md:mt-0 md:py-28 lg:py-32">
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={container}
+          style={{ y: copyY }}
+          className="max-w-xl lg:max-w-2xl"
+        >
           <motion.p
             variants={fadeUp}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium tracking-wide text-[color:oklch(0.85_0.05_250)] backdrop-blur"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium tracking-wide text-[color:oklch(0.87_0.05_250)] shadow-[0_1px_0_oklch(1_0_0/0.05)_inset] backdrop-blur"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent-blue)] shadow-[0_0_10px_var(--accent-blue)]" />
-            BtoB System Development Team
+            BtoBシステム開発チーム
           </motion.p>
+
           <motion.h1
             variants={fadeUp}
-            className="max-w-4xl text-4xl font-bold leading-[1.15] tracking-tight md:text-6xl"
+            className="text-[2rem] font-bold leading-[1.2] tracking-tight break-keep sm:text-4xl md:text-5xl lg:text-[3.4rem]"
           >
             業務を理解し、
-            <br className="hidden md:inline" />
-            使われ続けるシステムをつくる。
+            <br />
+            <span className="text-transparent [-webkit-background-clip:text] [background-clip:text] bg-[image:linear-gradient(100deg,oklch(0.99_0.01_250)_0%,oklch(0.86_0.08_250)_100%)]">
+              使われ続ける
+            </span>
+            <wbr />
+            システムをつくる。
           </motion.h1>
+
           <motion.p
             variants={fadeUp}
-            className="mt-8 max-w-2xl text-base leading-relaxed text-[color:oklch(0.86_0.02_250)] md:text-lg"
+            className="mt-7 max-w-xl text-[0.95rem] leading-relaxed text-[color:oklch(0.88_0.02_250)] md:text-lg"
           >
             RuxelTechは、業務システム・Webアプリ・生成AI連携・業務自動化を、
             要件整理から設計・開発・運用改善まで支援するシステム開発チームです。
           </motion.p>
-          <motion.div variants={fadeUp} className="mt-12 flex flex-wrap gap-4">
+
+          <motion.div variants={fadeUp} className="mt-9 flex flex-wrap gap-4">
             <CTAButton href="#contact">無料で相談する</CTAButton>
             <CTAButton href="#works" variant="ghost">
               開発実績を見る
             </CTAButton>
           </motion.div>
 
-          <motion.div
+          {/* trust badges */}
+          <motion.ul
             variants={fadeIn}
-            className="mt-20 grid grid-cols-2 gap-4 md:grid-cols-4"
+            className="mt-11 grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap md:mt-14"
           >
-            {stats.map((s, i) => (
-              <motion.div
-                key={s.k}
+            {badges.map((b) => (
+              <motion.li
+                key={b.label}
                 variants={fadeUp}
-                custom={i}
-                className="group rounded-lg border border-white/10 bg-white/[0.03] p-5 backdrop-blur transition-all duration-500 hover:-translate-y-1 hover:border-white/25 hover:bg-white/[0.06]"
+                className="group inline-flex w-full min-w-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] py-2 pl-2.5 pr-3.5 text-xs font-medium leading-snug text-[color:oklch(0.9_0.02_250)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.09] sm:w-auto md:text-[0.8rem]"
               >
-                <div className="text-xl font-semibold tracking-tight md:text-2xl">
-                  {s.k}
-                </div>
-                <div className="mt-1 text-xs text-[color:oklch(0.78_0.03_250)]">
-                  {s.v}
-                </div>
-              </motion.div>
+                <span className="inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-[var(--accent-blue)]/15 text-[var(--accent-blue-soft)] ring-1 ring-inset ring-[var(--accent-blue)]/25">
+                  <b.icon className="h-3.5 w-3.5" strokeWidth={2} />
+                </span>
+                {b.label}
+              </motion.li>
             ))}
-          </motion.div>
+          </motion.ul>
         </motion.div>
       </div>
+
+      {/* seam into the next section */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[oklch(0.14_0.05_262/0.5)]"
+      />
     </section>
   );
 }
 
-/** Slow-drifting light particles. */
-function Particles() {
-  const dots = Array.from({ length: 32 }, (_, i) => {
-    const seed = i * 137.508;
-    return {
-      left: (seed * 3.1) % 100,
-      top: (seed * 7.3) % 100,
-      size: 1 + ((i * 13) % 3),
-      duration: 8 + ((i * 5) % 10),
-      delay: (i * 0.4) % 6,
-      opacity: 0.15 + ((i * 7) % 40) / 200,
-    };
-  });
+/** Soft breathing accent orb sitting behind the copy column. */
+function GlowOrb() {
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0">
-      {dots.map((d, i) => (
-        <span
-          key={i}
-          className="absolute rounded-full bg-[oklch(0.9_0.08_250)]"
-          style={{
-            left: `${d.left}%`,
-            top: `${d.top}%`,
-            width: d.size,
-            height: d.size,
-            opacity: d.opacity,
-            boxShadow: `0 0 ${4 + d.size * 2}px oklch(0.75 0.16 250 / 0.6)`,
-            animation: `particle-drift ${d.duration}s ease-in-out ${d.delay}s infinite`,
-          }}
-        />
-      ))}
-    </div>
+    <div
+      aria-hidden
+      className="pointer-events-none absolute -left-24 top-1/4 h-[26rem] w-[26rem] rounded-full opacity-70 blur-3xl md:top-1/3"
+      style={{
+        background:
+          "radial-gradient(circle, oklch(0.55 0.16 255 / 0.28), transparent 68%)",
+        animation: "glow-breathe 9s ease-in-out infinite",
+      }}
+    />
   );
 }
 
-/** Slow horizontal flowing lines suggesting data connections. */
+/** Slow horizontal flowing lines suggesting data connections, faded to the left. */
 function FlowingLines() {
   return (
     <svg
       aria-hidden
-      className="pointer-events-none absolute inset-0 h-full w-full opacity-40"
+      className="pointer-events-none absolute inset-0 h-full w-full opacity-30"
       preserveAspectRatio="none"
       viewBox="0 0 1200 800"
+      style={{
+        maskImage: "linear-gradient(90deg, black 0%, black 38%, transparent 66%)",
+      }}
     >
       <defs>
         <linearGradient id="fline" x1="0" x2="1">
@@ -155,7 +217,7 @@ function FlowingLines() {
           <stop offset="100%" stopColor="oklch(0.55 0.16 255 / 0)" />
         </linearGradient>
       </defs>
-      {[180, 320, 480, 620, 740].map((y, i) => (
+      {[210, 360, 520, 660].map((y, i) => (
         <path
           key={i}
           d={`M0 ${y} C 300 ${y - 40}, 900 ${y + 40}, 1200 ${y}`}
@@ -163,69 +225,8 @@ function FlowingLines() {
           strokeWidth="1"
           fill="none"
           strokeDasharray="6 10"
-          style={{
-            animation: `dash-flow ${18 + i * 3}s linear infinite`,
-          }}
+          style={{ animation: `dash-flow ${18 + i * 3}s linear infinite` }}
         />
-      ))}
-    </svg>
-  );
-}
-
-function NetworkGraphic() {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 600 500"
-      className="pointer-events-none absolute -right-24 top-10 hidden h-[520px] w-[620px] opacity-60 md:block"
-    >
-      <defs>
-        <radialGradient id="node" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="oklch(0.75 0.16 250)" />
-          <stop offset="100%" stopColor="oklch(0.4 0.14 255 / 0)" />
-        </radialGradient>
-        <linearGradient id="line" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="oklch(0.75 0.16 250 / 0.6)" />
-          <stop offset="100%" stopColor="oklch(0.55 0.14 255 / 0)" />
-        </linearGradient>
-      </defs>
-      {[
-        [80, 120, 300, 200],
-        [300, 200, 500, 90],
-        [300, 200, 480, 320],
-        [300, 200, 180, 360],
-        [180, 360, 420, 430],
-        [500, 90, 480, 320],
-      ].map(([x1, y1, x2, y2], i) => (
-        <line
-          key={i}
-          x1={x1}
-          y1={y1}
-          x2={x2}
-          y2={y2}
-          stroke="url(#line)"
-          strokeWidth="1"
-        />
-      ))}
-      {[
-        [80, 120, 6],
-        [300, 200, 10],
-        [500, 90, 5],
-        [480, 320, 7],
-        [180, 360, 6],
-        [420, 430, 5],
-      ].map(([cx, cy, r], i) => (
-        <g key={i}>
-          <circle cx={cx} cy={cy} r={r * 3} fill="url(#node)">
-            <animate
-              attributeName="r"
-              values={`${r * 3};${r * 4};${r * 3}`}
-              dur={`${4 + i}s`}
-              repeatCount="indefinite"
-            />
-          </circle>
-          <circle cx={cx} cy={cy} r={r} fill="oklch(0.85 0.1 250)" />
-        </g>
       ))}
     </svg>
   );

@@ -37,38 +37,37 @@ export function SiteHeader() {
       className={cn(
         "sticky top-0 z-40 backdrop-blur-xl transition-all duration-500",
         scrolled
-          ? "border-b border-border/60 bg-background/75 shadow-[0_1px_0_oklch(0.55_0.14_255/0.06),0_10px_30px_-24px_oklch(0.24_0.07_260/0.35)]"
-          : "border-b border-white/10 bg-[oklch(0.16_0.05_262/0.4)]",
+          ? "border-b border-border/60 bg-background/85 shadow-[0_1px_0_oklch(0.55_0.14_255/0.06),0_12px_34px_-24px_oklch(0.24_0.07_260/0.4)]"
+          : "border-b border-border/40 bg-background/70",
       )}
     >
 
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        {/* Logo — swap this mark + wordmark for the official logo (e.g. an <img>) without touching the header layout */}
         <a
           href="#top"
           onClick={(e) => handleAnchorClick(e, "#top")}
-          className={cn(
-            "flex items-center gap-2 transition-colors",
-            scrolled ? "text-foreground" : "text-primary-foreground",
-          )}
+          className="flex items-center gap-2 text-foreground transition-colors"
         >
-          <span className="inline-block h-6 w-6 rounded-sm bg-[image:var(--gradient-accent)] shadow-[0_0_20px_oklch(0.55_0.16_255/0.5)]" />
+          <span className="relative inline-block h-6 w-6 overflow-hidden rounded-md bg-[image:var(--gradient-accent)] shadow-[0_0_18px_oklch(0.55_0.16_255/0.45)] ring-1 ring-inset ring-black/5">
+            <span
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(circle at 30% 25%, oklch(1 0 0 / 0.45), transparent 60%)",
+              }}
+            />
+          </span>
           <span className="text-base font-semibold tracking-tight">RuxelTech</span>
         </a>
-        <nav
-          className={cn(
-            "hidden gap-8 text-sm lg:flex",
-            scrolled ? "text-muted-foreground" : "text-[color:oklch(0.85_0.03_250)]",
-          )}
-        >
+        <nav className="hidden gap-8 text-sm text-muted-foreground lg:flex">
           {nav.map((n) => (
             <a
               key={n.href}
               href={n.href}
               onClick={(e) => handleAnchorClick(e, n.href)}
-              className={cn(
-                "relative transition-colors after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-[var(--accent-blue)] after:transition-transform after:duration-300 hover:after:origin-left hover:after:scale-x-100",
-                scrolled ? "hover:text-foreground" : "hover:text-white",
-              )}
+              className="relative transition-colors after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-[var(--accent-blue)] after:transition-transform after:duration-300 hover:text-foreground hover:after:origin-left hover:after:scale-x-100"
             >
               {n.label}
             </a>
@@ -77,12 +76,7 @@ export function SiteHeader() {
         <a
           href="#contact"
           onClick={(e) => handleAnchorClick(e, "#contact")}
-          className={cn(
-            "hidden rounded-md px-4 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)] md:inline-flex",
-            scrolled
-              ? "bg-primary text-primary-foreground hover:bg-[var(--primary-deep)]"
-              : "border border-white/25 bg-white/10 text-primary-foreground backdrop-blur hover:bg-white/20",
-          )}
+          className="hidden rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground ring-1 ring-inset ring-white/10 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[var(--primary-deep)] hover:shadow-[0_14px_30px_-14px_oklch(0.55_0.16_255/0.6)] md:inline-flex"
         >
           無料で相談する
         </a>
