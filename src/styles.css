@@ -113,6 +113,15 @@
   --sidebar-border: oklch(0.91 0.015 250);
   --sidebar-ring: oklch(0.55 0.14 255);
 
+  /* RuxelTech brand (logo blue #004ea2) — main color for the light LP hero */
+  --brand: #004ea2;
+  --brand-deep: #013a78;
+  --brand-bright: #2f83da;
+  --brand-tint: #eaf1fb;
+  --brand-ink: #16233b;
+  --gradient-brand: linear-gradient(135deg, #2f83da 0%, #0a57ac 48%, #013a78 100%);
+  --hero-surface: linear-gradient(180deg, #ffffff 0%, #f4f7fc 55%, #edf3fb 100%);
+
   /* Gradients & shadows for depth */
   --gradient-hero: radial-gradient(ellipse at top right, oklch(0.55 0.16 255 / 0.18), transparent 55%),
                    radial-gradient(ellipse at bottom left, oklch(0.4 0.12 250 / 0.12), transparent 60%),
@@ -210,6 +219,15 @@
 @keyframes glow-breathe {
   0%, 100% { transform: scale(1); opacity: 0.55; }
   50% { transform: scale(1.12); opacity: 0.8; }
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 @utility bg-soft-grid {
