@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode, SyntheticEvent } from "react";
+import type { ReactNode } from "react";
 import {
   motion,
   useReducedMotion,
@@ -50,18 +50,6 @@ function Mark({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * Use the lightweight PNG (~15KB) as the primary source and fall back to the
- * SVG only if the PNG is ever missing. The provided SVGs embed a full-res
- * raster (~940KB each), so the PNG is visually identical but far lighter.
- */
-function pngToSvg(e: SyntheticEvent<HTMLImageElement>) {
-  const img = e.currentTarget;
-  if (img.dataset.fallback) return;
-  img.dataset.fallback = "1";
-  img.src = img.src.replace(/\.png(\?.*)?$/, ".svg");
-}
-
 export function Hero() {
   const prefersReduced = useReducedMotion();
   const { scrollY } = useScroll();
@@ -73,7 +61,7 @@ export function Hero() {
   return (
     <section
       id="top"
-      className="relative isolate overflow-x-hidden"
+      className="relative z-10"
       style={{ background: "var(--hero-surface)" }}
     >
       {/* ===== Hero visual area (clips the person / watermark bleed) ===== */}
@@ -90,34 +78,52 @@ export function Hero() {
               "radial-gradient(ellipse at 65% 40%, black 30%, transparent 78%)",
           }}
         />
-        {/* soft brand glow behind the person */}
+        {/* brand symbol as ONE flat light-grey background shape — the logo mark
+            is used as a mask over a pale blue-grey fill, angled and bleeding off
+            the right / top / bottom edges (no enclosing circle). */}
+        <motion.div
+          aria-hidden
+          style={{
+            y: symbolY,
+            rotate: -12,
+            WebkitMaskImage: "url(/images/logo/ruxeltech-symbol.png)",
+            maskImage: "url(/images/logo/ruxeltech-symbol.png)",
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+            WebkitMaskSize: "contain",
+            maskSize: "contain",
+          }}
+          className="pointer-events-none absolute -right-[6%] top-[-24%] h-[150%] w-[62%] bg-[linear-gradient(150deg,#eaeff8_0%,#d6e0f1_100%)] md:w-[52%] lg:-right-[4%] lg:w-[46%]"
+        />
+        {/* small accent dots */}
         <div
           aria-hidden
-          className="pointer-events-none absolute right-[-10%] top-[-10%] h-[70%] w-[60%] rounded-full opacity-70 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(circle, var(--brand-tint), transparent 70%)",
-          }}
-        />
+          className="pointer-events-none absolute inset-0 hidden md:block"
+        >
+          <span className="absolute right-[9%] top-[15%] h-3 w-3 rounded-full bg-[var(--brand)]/20" />
+          <span className="absolute right-[40%] top-[9%] h-2 w-2 rounded-full bg-[var(--brand)]/15" />
+          <span className="absolute right-[7%] bottom-[16%] h-2.5 w-2.5 rounded-full bg-[var(--brand)]/15" />
+        </div>
 
-        <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 pb-12 pt-16 md:pt-20 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-6 lg:pb-14 lg:pt-16">
+        <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-6 px-6 pb-10 pt-12 md:pt-14 lg:grid-cols-[1.2fr_0.8fr] lg:items-end lg:gap-2 lg:pb-10 lg:pt-10">
           {/* ---------- LEFT: copy ---------- */}
           <motion.div
             initial="hidden"
             animate="show"
             variants={container}
-            className="relative z-10 max-w-xl min-w-0"
+            className="relative z-10 max-w-2xl min-w-0"
           >
             {/* speech-bubble label (navy pill with a downward tail) */}
             <motion.div
               variants={fadeUp}
-              className="relative mb-7 inline-flex items-center gap-2 rounded-full bg-[var(--brand-ink)] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_12px_28px_-14px_oklch(0.3_0.09_260/0.6)] md:text-[0.82rem]"
+              className="relative mb-6 inline-flex items-center gap-3 rounded-full bg-[var(--brand-ink)] px-9 py-4 text-base font-semibold text-white shadow-[0_16px_32px_-14px_oklch(0.3_0.09_260/0.6)] md:text-2xl"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-bright)]" />
               業務システム・AI連携にお悩みの企業様へ
               <span
                 aria-hidden
-                className="absolute -bottom-1.5 left-9 h-3.5 w-3.5 rotate-45 rounded-[2px] bg-[var(--brand-ink)]"
+                className="absolute -bottom-2 left-12 h-6 w-6 rotate-45 rounded-[3px] bg-[var(--brand-ink)]"
               />
             </motion.div>
 
@@ -137,43 +143,33 @@ export function Hero() {
             {/* emphasis copy — check-circle bullets with highlighted keywords.
                 Icon is absolutely positioned so the text is a normal block that
                 wraps reliably on narrow screens (avoids flex min-width quirks). */}
-            <motion.ul variants={fadeUp} className="mt-6 space-y-3">
-              <li className="relative pl-7">
+            <motion.ul variants={fadeUp} className="mt-7 space-y-4">
+              <li className="relative pl-8">
                 <CheckCircle2
-                  className="absolute left-0 top-[3px] h-5 w-5 text-[var(--brand)]"
+                  className="absolute left-0 top-[3px] h-6 w-6 text-[var(--brand)]"
                   strokeWidth={2.5}
                 />
-                <p className="text-[0.95rem] font-medium leading-relaxed text-[var(--brand-ink)] md:text-base">
+                <p className="text-base font-medium leading-relaxed text-[var(--brand-ink)] md:text-lg">
                   <Mark>30年PM直轄</Mark>で、要件整理から設計・開発まで
                   <Mark>一括支援</Mark>
                 </p>
               </li>
-              <li className="relative pl-7">
+              <li className="relative pl-8">
                 <CheckCircle2
-                  className="absolute left-0 top-[3px] h-5 w-5 text-[var(--brand)]"
+                  className="absolute left-0 top-[3px] h-6 w-6 text-[var(--brand)]"
                   strokeWidth={2.5}
                 />
-                <p className="text-[0.95rem] font-medium leading-relaxed text-[var(--brand-ink)] md:text-base">
+                <p className="text-base font-medium leading-relaxed text-[var(--brand-ink)] md:text-lg">
                   AI連携・業務システム・自動化を<Mark>現場で使える仕組み</Mark>へ
                 </p>
               </li>
             </motion.ul>
 
-            {/* CTAs */}
-            <motion.div
-              variants={fadeUp}
-              className="mt-6 flex flex-col gap-3 sm:flex-row sm:gap-4"
-            >
-              <BrandButton href="#contact">無料で相談する</BrandButton>
-              <BrandButton href="#works" variant="outline">
-                開発実績を見る
-              </BrandButton>
-            </motion.div>
-
-            {/* trust badges — finished badge images (object-contain, transparent) */}
+            {/* trust badges — finished badge images, placed right under the copy
+                (the single primary CTA lives in the bottom CTA box) */}
             <motion.ul
               variants={fadeIn}
-              className="mt-6 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mt-7 sm:gap-4 sm:overflow-visible sm:pb-0"
+              className="mt-7 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mt-8 sm:gap-4 sm:overflow-visible sm:pb-0"
             >
               {badges.map((b) => (
                 <motion.li key={b.src} variants={fadeUp} className="flex-none">
@@ -182,77 +178,45 @@ export function Hero() {
                     alt={b.alt}
                     loading="lazy"
                     decoding="async"
-                    className="h-24 w-auto object-contain drop-shadow-[0_6px_12px_oklch(0.3_0.09_260/0.1)] sm:h-28 lg:h-32"
+                    className="h-28 w-auto object-contain drop-shadow-[0_6px_12px_oklch(0.3_0.09_260/0.1)] sm:h-32 lg:h-40"
                   />
                 </motion.li>
               ))}
             </motion.ul>
           </motion.div>
 
-          {/* ---------- RIGHT: person + diagonal symbol motif ---------- */}
-          {/* Adjust person size/position with the `h-*`, `right-*` utilities;
-              adjust the background motif with `w-*`, `-right-*`, `rotate`. */}
-          <div className="relative min-h-[340px] sm:min-h-[400px] lg:min-h-[500px]">
-            {/* soft background panel for depth */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute right-[-6%] top-[4%] h-[88%] w-[94%] rounded-[46%_54%_48%_52%/56%_44%_56%_44%] bg-[linear-gradient(145deg,#eef3fb_0%,#e2ebf7_100%)]"
-            />
-            {/* giant brand symbol as a diagonal background motif (pale blue-grey) */}
+          {/* ---------- RIGHT: person + circular stat badge ---------- */}
+          {/* The background symbol shape lives at the visual level above. */}
+          <div className="relative min-h-[320px] sm:min-h-[380px] lg:min-h-[430px]">
+            {/* person cutout (transparent, upper-body) */}
             <motion.img
-              aria-hidden
-              src="/images/logo/ruxeltech-symbol.png"
-              onError={pngToSvg}
-              style={{
-                y: symbolY,
-                rotate: -12,
-                filter: "saturate(0.4) brightness(1.22)",
-              }}
-              className="pointer-events-none absolute -top-[8%] -right-[16%] w-[150%] max-w-none opacity-[0.08] lg:-right-[14%] lg:w-[128%]"
-            />
-
-            {/* person cutout (transparent) */}
-            <motion.img
-              src="/images/hero/hero-person-transparent.png"
-              alt="RuxelTechのシステム開発を案内するビジネスパーソン"
+              src="/images/hero/top-woman.png"
+              alt="RuxelTechのシステム開発をご案内するビジネスパーソン"
               fetchPriority="high"
               decoding="async"
               style={{ y: personY }}
-              className="absolute bottom-0 right-0 h-[340px] w-auto drop-shadow-[0_34px_55px_oklch(0.24_0.07_260/0.2)] sm:h-[400px] lg:right-2 lg:h-[520px]"
+              className="absolute bottom-0 right-0 h-[300px] w-auto drop-shadow-[0_34px_55px_oklch(0.24_0.07_260/0.2)] sm:h-[360px] lg:right-0 lg:h-[450px]"
             />
 
-            {/* circular stat badge (speech bubble) near the person */}
-            <div className="absolute left-0 top-6 z-10 flex h-[5.6rem] w-[5.6rem] flex-col items-center justify-center rounded-full bg-white text-center shadow-[0_16px_38px_-14px_oklch(0.3_0.09_260/0.55)] ring-1 ring-[var(--brand)]/15 sm:top-2 lg:left-4 lg:h-[6.6rem] lg:w-[6.6rem]">
-              <span
-                aria-hidden
-                className="absolute inset-1.5 rounded-full border border-dashed border-[var(--brand)]/25"
-              />
-              <span className="relative text-[0.58rem] font-semibold text-[var(--brand-ink)] lg:text-[0.64rem]">
-                IT経験
-              </span>
-              <span className="relative flex items-end font-bold leading-none text-[var(--brand)]">
-                <span className="text-[1.5rem] lg:text-[1.8rem]">30</span>
-                <span className="mb-0.5 text-[0.85rem] lg:text-[0.95rem]">年</span>
-              </span>
-              <span className="relative text-[0.56rem] font-semibold text-[var(--brand-ink)] lg:text-[0.62rem]">
-                PM直轄
-              </span>
-              <span
-                aria-hidden
-                className="absolute -bottom-1 right-7 h-3.5 w-3.5 rotate-45 rounded-[2px] bg-white shadow-[3px_3px_6px_-3px_oklch(0.3_0.09_260/0.4)]"
-              />
-            </div>
+            {/* floating credential card — presented by the person's open palm.
+                Adjust placement/size/tilt with `left-* top-* w-* -rotate-*`. */}
+            <img
+              src="/images/hero/card.png"
+              alt="30年のIT経験。PM直轄で要件整理から品質管理まで対応します。"
+              decoding="async"
+              className="pointer-events-none absolute left-0 top-4 z-10 w-40 -rotate-3 drop-shadow-[0_24px_45px_oklch(0.3_0.09_260/0.22)] sm:top-2 sm:w-48 lg:top-6 lg:w-60"
+            />
           </div>
         </div>
       </div>
 
       {/* ===== Bottom CTA box (overlaps hero bottom into the next section) ===== */}
-      <div className="relative z-20 mx-auto max-w-4xl px-6">
+      <div className="relative z-20 mx-auto max-w-5xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease, delay: 0.4 }}
-          className="-mt-6 -mb-12 flex flex-col items-center gap-5 rounded-3xl border border-[var(--brand)]/10 bg-white p-6 text-center shadow-[0_30px_70px_-30px_oklch(0.24_0.07_260/0.4)] md:flex-row md:justify-between md:gap-8 md:p-7 md:text-left lg:-mt-12 lg:-mb-20"
+          className="-mt-6 -mb-14 flex flex-col items-center gap-5 rounded-3xl border border-[var(--brand)]/10 bg-white p-6 text-center shadow-[0_30px_70px_-30px_oklch(0.24_0.07_260/0.4)] md:flex-row md:justify-between md:gap-8 md:p-7 md:text-left lg:-mt-10 lg:-mb-24"
         >
           <div>
             <p className="text-lg font-bold tracking-tight text-[var(--brand-ink)] md:text-xl">
