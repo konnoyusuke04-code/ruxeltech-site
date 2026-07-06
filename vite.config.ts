@@ -11,5 +11,17 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
+    // Prerender routes to static HTML so the site can be served from a plain
+    // static host (XServer shared hosting — no Node runtime). crawlLinks follows
+    // in-app links so every reachable route is emitted as HTML.
+    prerender: {
+      enabled: true,
+      crawlLinks: true,
+    },
+  },
+  // Output a fully static site to .output/public instead of the default
+  // Cloudflare server bundle. This override only applies outside Lovable builds.
+  nitro: {
+    preset: "static",
   },
 });
