@@ -1,27 +1,36 @@
 import { useEffect, useState, type SyntheticEvent } from "react";
 import { Menu, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
-const nav = [
-  { label: "サービス", href: "#services" },
-  { label: "実績", href: "#works" },
-  { label: "チーム", href: "#team" },
-  { label: "お客様の声", href: "#voices" },
-  { label: "進め方", href: "#process" },
-  { label: "FAQ", href: "#faq" },
+type NavItem =
+  | { label: string; to: string } // internal page (SPA navigation)
+  | { label: string; hash: string }; // homepage section anchor
+
+const nav: NavItem[] = [
+  { label: "チーム紹介", to: "/team" },
+  { label: "サービス", hash: "services" },
+  { label: "実績", hash: "works" },
+  { label: "お客様の声", hash: "voices" },
+  { label: "進め方", hash: "process" },
+  { label: "FAQ", hash: "faq" },
 ];
 
-function handleAnchorClick(
+/**
+ * Smooth-scroll to a homepage section when we are already on "/". On any other
+ * page, let the browser follow the `/#hash` href (loads home, then the fragment
+ * scrolls the section into view).
+ */
+function scrollToHashOnHome(
   e: React.MouseEvent<HTMLAnchorElement>,
-  href: string,
+  hash: string,
 ) {
-  if (!href.startsWith("#")) return;
-  const id = href.slice(1);
-  const el = document.getElementById(id);
+  if (typeof window === "undefined" || window.location.pathname !== "/") return;
+  const el = document.getElementById(hash);
   if (!el) return;
   e.preventDefault();
   el.scrollIntoView({ behavior: "smooth", block: "start" });
-  history.replaceState(null, "", href);
+  history.replaceState(null, "", `#${hash}`);
 }
 
 /**
@@ -35,6 +44,9 @@ function pngToSvg(e: SyntheticEvent<HTMLImageElement>) {
   img.dataset.fallback = "1";
   img.src = img.src.replace(/\.png(\?.*)?$/, ".svg");
 }
+
+const navLinkClass =
+  "relative transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:origin-right after:scale-x-0 after:rounded-full after:bg-[var(--brand)] after:transition-transform after:duration-300 hover:text-[var(--brand)] hover:after:origin-left hover:after:scale-x-100";
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
@@ -56,40 +68,41 @@ export function SiteHeader() {
       )}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 lg:h-20">
-        {/* Logo (official horizontal logo; swap the src to change it) */}
-        <a
-          href="#top"
-          onClick={(e) => handleAnchorClick(e, "#top")}
-          className="flex items-center"
-          aria-label="RuxelTech ホーム"
-        >
+        {/* Logo -> home */}
+        <Link to="/" className="flex items-center" aria-label="RuxelTech ホーム">
           <img
             src="/images/logo/ruxeltech-logo.png"
             onError={pngToSvg}
             alt="RuxelTech"
             className="h-7 w-auto lg:h-8"
           />
-        </a>
+        </Link>
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-7 text-sm font-medium text-[var(--brand-ink)]/85 lg:flex">
-          {nav.map((n) => (
-            <a
-              key={n.href}
-              href={n.href}
-              onClick={(e) => handleAnchorClick(e, n.href)}
-              className="relative transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:origin-right after:scale-x-0 after:rounded-full after:bg-[var(--brand)] after:transition-transform after:duration-300 hover:text-[var(--brand)] hover:after:origin-left hover:after:scale-x-100"
-            >
-              {n.label}
-            </a>
-          ))}
+          {nav.map((n) =>
+            "to" in n ? (
+              <Link key={n.to} to={n.to} className={navLinkClass}>
+                {n.label}
+              </Link>
+            ) : (
+              <a
+                key={n.hash}
+                href={`/#${n.hash}`}
+                onClick={(e) => scrollToHashOnHome(e, n.hash)}
+                className={navLinkClass}
+              >
+                {n.label}
+              </a>
+            ),
+          )}
         </nav>
 
         {/* Right cluster */}
         <div className="flex items-center gap-2">
           <a
-            href="#contact"
-            onClick={(e) => handleAnchorClick(e, "#contact")}
+            href="/#contact"
+            onClick={(e) => scrollToHashOnHome(e, "contact")}
             className="hidden rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_26px_-14px_oklch(0.45_0.16_255/0.6)] ring-1 ring-inset ring-white/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-16px_oklch(0.45_0.16_255/0.65)] sm:inline-flex"
             style={{ backgroundImage: "var(--gradient-brand)" }}
           >
@@ -111,23 +124,34 @@ export function SiteHeader() {
       {open && (
         <div className="border-t border-[var(--brand)]/10 bg-white lg:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col px-6 py-2">
-            {nav.map((n) => (
-              <a
-                key={n.href}
-                href={n.href}
-                onClick={(e) => {
-                  handleAnchorClick(e, n.href);
-                  setOpen(false);
-                }}
-                className="border-b border-[var(--brand)]/5 py-3.5 text-sm font-medium text-[var(--brand-ink)] transition-colors hover:text-[var(--brand)]"
-              >
-                {n.label}
-              </a>
-            ))}
+            {nav.map((n) =>
+              "to" in n ? (
+                <Link
+                  key={n.to}
+                  to={n.to}
+                  onClick={() => setOpen(false)}
+                  className="border-b border-[var(--brand)]/5 py-3.5 text-sm font-medium text-[var(--brand-ink)] transition-colors hover:text-[var(--brand)]"
+                >
+                  {n.label}
+                </Link>
+              ) : (
+                <a
+                  key={n.hash}
+                  href={`/#${n.hash}`}
+                  onClick={(e) => {
+                    scrollToHashOnHome(e, n.hash);
+                    setOpen(false);
+                  }}
+                  className="border-b border-[var(--brand)]/5 py-3.5 text-sm font-medium text-[var(--brand-ink)] transition-colors hover:text-[var(--brand)]"
+                >
+                  {n.label}
+                </a>
+              ),
+            )}
             <a
-              href="#contact"
+              href="/#contact"
               onClick={(e) => {
-                handleAnchorClick(e, "#contact");
+                scrollToHashOnHome(e, "contact");
                 setOpen(false);
               }}
               className="mt-4 mb-2 inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_26px_-14px_oklch(0.45_0.16_255/0.6)]"
@@ -141,7 +165,6 @@ export function SiteHeader() {
     </header>
   );
 }
-
 
 export function SiteFooter() {
   return (
@@ -162,16 +185,16 @@ export function SiteFooter() {
             <div>
               <p className="mb-3 font-medium text-foreground">サイト</p>
               <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#services" className="hover:text-foreground">サービス</a></li>
-                <li><a href="#works" className="hover:text-foreground">実績</a></li>
-                <li><a href="#team" className="hover:text-foreground">チーム</a></li>
-                <li><a href="#faq" className="hover:text-foreground">FAQ</a></li>
+                <li><Link to="/team" className="hover:text-foreground">チーム紹介</Link></li>
+                <li><a href="/#services" className="hover:text-foreground">サービス</a></li>
+                <li><a href="/#works" className="hover:text-foreground">実績</a></li>
+                <li><a href="/#faq" className="hover:text-foreground">FAQ</a></li>
               </ul>
             </div>
             <div>
               <p className="mb-3 font-medium text-foreground">お問い合わせ</p>
               <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#contact" className="hover:text-foreground">無料相談</a></li>
+                <li><a href="/#contact" className="hover:text-foreground">無料相談</a></li>
               </ul>
             </div>
           </div>
