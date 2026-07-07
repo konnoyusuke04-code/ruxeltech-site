@@ -101,6 +101,10 @@ export function Challenges() {
     <Section
       id="challenges"
       tone="muted"
+      // Extra top padding so the header clears the Hero's floating CTA box
+      // (its negative bottom margin overlaps into this section's top).
+      className="pt-36 md:pt-56"
+      watermark="CHALLENGE"
       eyebrow="Common Challenges"
       title="こんな業務課題はありませんか？"
       description="現場でよく耳にする課題を、業務理解と適切な技術選定で解きほぐします。"

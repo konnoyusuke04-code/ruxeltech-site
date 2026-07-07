@@ -37,6 +37,7 @@ export function FAQ() {
   return (
     <Section
       id="faq"
+      watermark="FAQ"
       eyebrow="FAQ"
       title="よくあるご質問"
       description="ご相談の前に、多くいただく質問への回答をまとめました。"
