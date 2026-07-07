@@ -59,6 +59,7 @@ export function Works() {
   return (
     <Section
       id="works"
+      watermark="WORKS"
       eyebrow="Case Studies"
       title="開発実績"
       description="カテゴリごとに、これまでの支援事例をご覧いただけます。"

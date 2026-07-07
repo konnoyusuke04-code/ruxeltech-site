@@ -15,6 +15,7 @@ export function Process() {
     <Section
       id="process"
       tone="dark"
+      watermark="PROCESS"
       eyebrow="Process"
       title="開発の進め方"
       description="曖昧な相談から運用改善まで、一貫した流れでご支援します。"

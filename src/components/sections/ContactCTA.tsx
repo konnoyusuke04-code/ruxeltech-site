@@ -32,20 +32,28 @@ export function ContactCTA() {
           as="div"
           className="relative mx-auto max-w-4xl px-6 py-28 text-center md:py-36"
         >
-          <p className="mb-5 text-xs font-medium uppercase tracking-[0.28em] text-[color:oklch(0.8_0.06_250)]">
-            Contact
-          </p>
-          <h2 className="text-3xl font-bold leading-[1.2] tracking-tight md:text-5xl">
-            まだ要件が固まっていなくても大丈夫です。
-          </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-[color:oklch(0.86_0.02_250)] md:text-lg">
-            業務内容や課題を整理しながら、実現方法・開発範囲・進め方をご提案します。
-            まずはお気軽にご相談ください。
-          </p>
-          <div className="mt-10 flex justify-center">
-            <CTAButton href="#contact" className="px-8 py-4 md:text-base">
-              無料で相談する
-            </CTAButton>
+          <div className="relative">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 -top-6 -translate-x-1/2 select-none whitespace-nowrap text-white/[0.06] text-[4.25rem] font-black uppercase leading-none tracking-[0.14em] md:-top-14 md:text-[8.5rem]"
+            >
+              CONTACT
+            </span>
+            <p className="relative mb-5 text-xs font-medium uppercase tracking-[0.28em] text-[color:oklch(0.8_0.06_250)]">
+              Contact
+            </p>
+            <h2 className="relative text-3xl font-bold leading-[1.2] tracking-tight md:text-5xl">
+              まだ要件が固まっていなくても大丈夫です。
+            </h2>
+            <p className="relative mx-auto mt-6 max-w-2xl text-base leading-relaxed text-[color:oklch(0.86_0.02_250)] md:text-lg">
+              業務内容や課題を整理しながら、実現方法・開発範囲・進め方をご提案します。
+              まずはお気軽にご相談ください。
+            </p>
+            <div className="relative mt-10 flex justify-center">
+              <CTAButton href="#contact" className="px-8 py-4 md:text-base">
+                無料で相談する
+              </CTAButton>
+            </div>
           </div>
         </Reveal>
       </div>

@@ -79,7 +79,7 @@ export function Reasons() {
         <div className="relative mx-auto max-w-2xl text-center">
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 -top-5 select-none text-[4.25rem] font-black uppercase leading-none tracking-[0.14em] text-[var(--brand)]/[0.06] md:-top-12 md:text-[8.5rem]"
+            className="pointer-events-none absolute left-1/2 -top-5 -translate-x-1/2 select-none whitespace-nowrap text-[4.25rem] font-black uppercase leading-none tracking-[0.14em] text-[var(--brand)]/[0.06] md:-top-12 md:text-[8.5rem]"
           >
             REASON
           </span>

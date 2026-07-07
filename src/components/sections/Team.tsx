@@ -5,6 +5,7 @@ export function Team() {
     <Section
       id="team"
       tone="muted"
+      watermark="TEAM"
       eyebrow="Team"
       title="チーム紹介"
       description="案件ごとに最適な専門メンバーで編成する、少数精鋭の開発チームです。"

@@ -23,6 +23,7 @@ export function Voices() {
   return (
     <Section
       id="voices"
+      watermark="VOICE"
       eyebrow="Client Voices"
       title="お客様の声"
       description="業務改善・新規開発の両面で、伴走型の支援にご評価をいただいています。"
