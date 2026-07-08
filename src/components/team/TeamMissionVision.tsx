@@ -62,6 +62,9 @@ export function TeamMissionVision() {
                   "radial-gradient(ellipse at 50% 50%, black 30%, transparent 75%)",
               }}
             />
+            {/* Fallback: white logo mark on the brand card. Shown until (or if)
+                the motion video is unavailable, so the card is never empty and
+                the layout never shifts. Same look as the previous static logo. */}
             <div
               aria-hidden
               className="absolute inset-[20%] bg-white/25"
@@ -76,6 +79,29 @@ export function TeamMissionVision() {
                 maskSize: "contain",
               }}
             />
+            {/* RuxelTech logo-motion video (decorative). 1:1, object-contain so
+                the mark is never cropped; fills the square card and blends with
+                the brand blue. Drop the file(s) at the path(s) below and it
+                plays automatically — no other change needed. (Add the .webm for
+                smaller/altenative delivery; the .mp4 is the primary source.) */}
+            <video
+              aria-hidden
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              className="absolute inset-0 h-full w-full object-contain"
+            >
+              <source
+                src="/videos/team/ruxeltech-logo-motion.webm"
+                type="video/webm"
+              />
+              <source
+                src="/videos/team/ruxeltech-logo-motion.mp4"
+                type="video/mp4"
+              />
+            </video>
           </Reveal>
         </div>
       </div>

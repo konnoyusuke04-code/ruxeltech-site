@@ -1,6 +1,6 @@
 import { useEffect, useState, type SyntheticEvent } from "react";
 import { Menu, X } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 type NavItem =
@@ -45,18 +45,67 @@ function pngToSvg(e: SyntheticEvent<HTMLImageElement>) {
   img.src = img.src.replace(/\.png(\?.*)?$/, ".svg");
 }
 
+/**
+ * Footer logo: show the dedicated wide footer SVG once it's saved at the path
+ * referenced below. Until then, fall back to the existing horizontal logo so
+ * the footer always shows the real RuxelTech mark — never a broken image or the
+ * old placeholder square. Drop the SVG at the path and it takes over.
+ */
+function footerLogoFallback(e: SyntheticEvent<HTMLImageElement>) {
+  const img = e.currentTarget;
+  if (img.dataset.fallback) return;
+  img.dataset.fallback = "1";
+  img.src = "/images/logo/ruxeltech-logo.png";
+}
+
 const navLinkClass =
   "relative transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:origin-right after:scale-x-0 after:rounded-full after:bg-[var(--brand)] after:transition-transform after:duration-300 hover:text-[var(--brand)] hover:after:origin-left hover:after:scale-x-100";
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [activeSection, setActiveSection] = useState<string | null>(null);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Scroll-spy: on the homepage, mark the nav item whose section is in view.
+  useEffect(() => {
+    if (pathname !== "/") {
+      setActiveSection(null);
+      return;
+    }
+    const ids = nav.flatMap((n) => ("hash" in n ? [n.hash] : []));
+    const els = ids
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (els.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const inView = entries.filter((e) => e.isIntersecting);
+        if (inView.length > 0) {
+          inView.sort(
+            (a, b) => a.boundingClientRect.top - b.boundingClientRect.top,
+          );
+          setActiveSection(inView[0].target.id);
+        }
+      },
+      { rootMargin: "-35% 0px -55% 0px", threshold: 0 },
+    );
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [pathname]);
+
+  const isActive = (n: NavItem) =>
+    "to" in n ? pathname === n.to : pathname === "/" && activeSection === n.hash;
+
+  const activeUnderline =
+    "text-[var(--brand)] after:origin-left after:scale-x-100";
 
   return (
     <header
@@ -80,9 +129,16 @@ export function SiteHeader() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-7 text-sm font-medium text-[var(--brand-ink)]/85 lg:flex">
-          {nav.map((n) =>
-            "to" in n ? (
-              <Link key={n.to} to={n.to} className={navLinkClass}>
+          {nav.map((n) => {
+            const active = isActive(n);
+            const cls = cn(navLinkClass, active && activeUnderline);
+            return "to" in n ? (
+              <Link
+                key={n.to}
+                to={n.to}
+                className={cls}
+                aria-current={active ? "page" : undefined}
+              >
                 {n.label}
               </Link>
             ) : (
@@ -90,12 +146,13 @@ export function SiteHeader() {
                 key={n.hash}
                 href={`/#${n.hash}`}
                 onClick={(e) => scrollToHashOnHome(e, n.hash)}
-                className={navLinkClass}
+                className={cls}
+                aria-current={active ? "location" : undefined}
               >
                 {n.label}
               </a>
-            ),
-          )}
+            );
+          })}
         </nav>
 
         {/* Right cluster */}
@@ -124,13 +181,21 @@ export function SiteHeader() {
       {open && (
         <div className="border-t border-[var(--brand)]/10 bg-white lg:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col px-6 py-2">
-            {nav.map((n) =>
-              "to" in n ? (
+            {nav.map((n) => {
+              const active = isActive(n);
+              const mcls = cn(
+                "border-b border-[var(--brand)]/5 py-3.5 text-sm font-medium transition-colors hover:text-[var(--brand)]",
+                active
+                  ? "font-semibold text-[var(--brand)]"
+                  : "text-[var(--brand-ink)]",
+              );
+              return "to" in n ? (
                 <Link
                   key={n.to}
                   to={n.to}
                   onClick={() => setOpen(false)}
-                  className="border-b border-[var(--brand)]/5 py-3.5 text-sm font-medium text-[var(--brand-ink)] transition-colors hover:text-[var(--brand)]"
+                  className={mcls}
+                  aria-current={active ? "page" : undefined}
                 >
                   {n.label}
                 </Link>
@@ -142,12 +207,13 @@ export function SiteHeader() {
                     scrollToHashOnHome(e, n.hash);
                     setOpen(false);
                   }}
-                  className="border-b border-[var(--brand)]/5 py-3.5 text-sm font-medium text-[var(--brand-ink)] transition-colors hover:text-[var(--brand)]"
+                  className={mcls}
+                  aria-current={active ? "location" : undefined}
                 >
                   {n.label}
                 </a>
-              ),
-            )}
+              );
+            })}
             <a
               href="/#contact"
               onClick={(e) => {
@@ -172,10 +238,14 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="flex flex-col justify-between gap-8 md:flex-row">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="inline-block h-6 w-6 rounded-sm bg-[image:var(--gradient-accent)]" />
-              <span className="text-base font-semibold tracking-tight">RuxelTech</span>
-            </div>
+            {/* Footer logo — dedicated wide footer SVG (falls back to the
+                existing horizontal logo until that file is saved). */}
+            <img
+              src="/images/logo/ruxeltech-logo-footer.svg"
+              onError={footerLogoFallback}
+              alt="RuxelTech"
+              className="h-auto w-40 sm:w-44"
+            />
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
               業務を理解し、使われ続けるシステムをつくる。<br />
               日本企業のためのシステム開発チーム。
